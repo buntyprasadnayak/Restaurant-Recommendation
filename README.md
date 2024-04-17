@@ -111,7 +111,35 @@ cosine_similarities = linear_kernel(tfidf_matrix, tfidf_matrix)
 
 def recommend(name, cosine_similarities=cosine_similarities):
     # Recommendation function
-    ...
+    # Create a list to put top 10 restaurants
+    recommend_restaurant = []
+
+    # Find the index of the hotel entered
+    idx = indices[indices == name].index[0]
+
+    # Find the restaurants with a similar cosine-sim value and order them from bigges number
+    score_series = pd.Series(cosine_similarities[idx]).sort_values(ascending=False)
+
+    # Extract top 30 restaurant indexes with a similar cosine-sim value
+    top30_indexes = list(score_series.iloc[0:31].index)
+
+    # Names of the top 30 restaurants
+    for each in top30_indexes:
+        recommend_restaurant.append(list(df.index)[each])
+
+    # Creating the new data set to show similar restaurants
+    df_new = pd.DataFrame(columns=['Cuisines', 'Rating', 'Cost', 'Timings'])
+
+    # Create the top 30 similar restaurants with some of their columns
+    for each in recommend_restaurant:
+        df_new = df_new.append(pd.DataFrame(df[['Cuisines','Rating', 'Cost', 'Timings']][df.index == each].sample()))
+
+    # Drop the same named restaurants and sort only the top 10 by the highest rating
+    df_new = df_new.drop_duplicates(subset=['Cuisines','Rating', 'Cost'], keep=False)
+    df_new = df_new.sort_values(by='Rating', ascending=False).head(7)
+
+    print('TOP %s RESTAURANTS LIKE %s WITH SIMILAR REVIEWS: ' % (str(len(df_new)), name))
+
     return df_new
 ```
 
